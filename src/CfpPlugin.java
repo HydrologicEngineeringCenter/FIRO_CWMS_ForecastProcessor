@@ -1,4 +1,6 @@
 import com.rma.factories.NewObjectFactory;
+import com.rma.io.FileManagerImpl;
+import com.rma.io.RmaFile;
 import hec2.map.GraphicElement;
 import hec2.model.DataLocation;
 import hec2.model.ProgramOrderItem;
@@ -7,6 +9,7 @@ import hec2.plugin.action.EditAction;
 import hec2.plugin.action.OutputElement;
 import hec2.plugin.lang.ModelLinkingException;
 import hec2.plugin.lang.OutputException;
+import hec2.plugin.model.ComputeOptions;
 import hec2.plugin.model.ModelAlternative;
 import hec2.plugin.selfcontained.AbstractSelfContainedPlugin;
 import hec2.rts.plugin.RtsPlugin;
@@ -45,7 +48,7 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     protected CfpAlternative newAlternative(String s) {
-        return null;
+        return new CfpAlternative(s);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     protected NewObjectFactory getAltObjectFactory() {
-        return null;
+        return new CfpAlternativeFactory(this);
     }
 
     @Override
@@ -83,6 +86,11 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
         CfpAlternative alt = getSimulationAlt(modelAlternative);
         if (alt != null) {
             alt.setComputeOptions(modelAlternative.getComputeOptions());
+            if (_computeListeners != null && !_computeListeners.isEmpty()) {
+                for (int i = 0; i < _computeListeners.size(); i++) {
+                    alt.addComputeListener(_computeListeners.get(i));
+                }
+            }
             return alt.compute();
         } else {
             addComputeErrorMessage("Failed to find Alternative for " + modelAlternative);
@@ -92,12 +100,23 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     public List<DataLocation> getDataLocations(ModelAlternative modelAlternative, int i) {
-        return null;
+        CfpAlternative alt = getAlt(modelAlternative);
+        if (alt == null) return null;
+        if (DataLocation.INPUT_LOCATIONS == i) {
+            return alt.getInputDataLocations();
+        }
+        else {
+            return alt.getOutputDataLocations();
+        }
     }
 
     @Override
     public boolean setDataLocations(ModelAlternative modelAlternative, List<DataLocation> list) throws ModelLinkingException {
-        return false;
+        CfpAlternative alt = getAlt(modelAlternative);
+        if (alt != null) {
+            return alt.setDataLocations(list);
+        }
+        return true;
     }
 
     @Override
@@ -132,7 +151,14 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     public boolean saveProject() {
-        return false;
+        boolean success = true;
+        for (CfpAlternative alt: _altList){
+            if (!alt.saveData()){
+                success = false;
+                System.out.println("Alternative " + alt.getName() + " could not save.");
+            }
+        }
+        return success;
     }
 
     @Override
@@ -143,5 +169,32 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
     @Override
     public String getVersion() {
         return _pluginVersion;
+    }
+
+    @Override
+    public CfpAlternative getSimulationAlt(ModelAlternative ma) {
+        if (ma == null) {
+            return null;
+        }
+        ComputeOptions co = ma.getComputeOptions();
+        if (co == null) {
+            return null;
+        }
+        CfpAlternative alt = getAlt(ma);
+        if (alt == null) {
+            return null;
+        }
+        String altName = ma.getName();
+        RmaFile file = alt.getFile();
+        String runDir = getRunDirectory(co);
+        String fname = file.getName();
+        String runPath = runDir.concat(RmaFile.separator).concat(fname);
+        RmaFile runFile = FileManagerImpl.getFileManager().getFile(runPath);
+        CfpAlternative simAlt = newAlternative(runFile.getAbsolutePath());
+        simAlt.setFile(runFile);
+        simAlt.setProject(alt.getProject());
+        simAlt.setName(altName);
+        simAlt.readData();
+        return simAlt;
     }
 }

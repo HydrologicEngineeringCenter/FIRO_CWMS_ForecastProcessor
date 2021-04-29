@@ -1,5 +1,7 @@
 import com.rma.io.RmaFile;
+import hec.heclib.dss.DSSPathname;
 import hec2.model.DataLocation;
+import hec2.plugin.model.ModelAlternative;
 import hec2.plugin.selfcontained.SelfContainedPluginAlt;
 import hec2.plugin.model.ComputeOptions;
 import org.jdom.Document;
@@ -99,4 +101,80 @@ public class CfpAlternative extends SelfContainedPluginAlt {
         }
         return false;
     }
+
+    private List<DataLocation> defaultDataLocations() {
+        if (!_dataLocations.isEmpty()) {
+            for (DataLocation dl: _dataLocations) {
+                String dlparts = dl.getDssPath();
+                DSSPathname p = new DSSPathname(dlparts);
+                if (p.aPart().equals("") && p.bPart().equals("") && p.cPart().equals("") &&
+                        p.dPart().equals("") && p.ePart().equals("") && p.fPart().equals("")) {
+                    if (validLinkedToDssPath(dl)) {
+                        setDssParts(dl);
+                    }
+                }
+            }
+            return _dataLocations;
+        }
+        List<DataLocation> dlList = new ArrayList<>();
+        DataLocation dloc = new DataLocation(this.getModelAlt(), _name, "Any");
+        dlList.add(dloc);
+        return dlList;
+    }
+
+    private void setDssParts(DataLocation dl) {
+        DataLocation linkedTo = dl.getLinkedToLocation();
+        String dssPath = linkedTo.getDssPath();
+        DSSPathname p = new DSSPathname(dssPath);
+        String[] parts = p.getParts();
+        parts[1] = parts[1] + " Output";
+        ModelAlternative malt = this.getModelAlt();
+        malt.setProgram(CfpPlugin.PluginName);
+        p.setParts(parts);
+        dl.setDssPath(p.getPathname());
+    }
+
+    private boolean validLinkedToDssPath(DataLocation dl) {
+        DataLocation linkedTo = dl.getLinkedToLocation();
+        String dssPath = linkedTo.getDssPath();
+        return !(dssPath == null || dssPath.isEmpty());
+
+    }
+
+    public List<DataLocation> getInputDataLocations(){
+        return defaultDataLocations();
+    }
+
+    public List<DataLocation> getOutputDataLocations() {
+        return defaultDataLocations();
+    }
+
+    public boolean setDataLocations(List<DataLocation> dataLocations) {
+        boolean retval = false;
+        for (DataLocation dl: dataLocations) {
+            int i = dataLocations.indexOf(dl);
+            if (!_dataLocations.contains(dl)) {
+                DataLocation linkedTo = dl.getLinkedToLocation();
+                String dssPath = linkedTo.getDssPath();
+                if (validLinkedToDssPath(dl)) {
+                    setModified(true);
+                    setDssParts(dl);
+                    _dataLocations.set(i, dl);
+                    retval = true;
+                }
+            } else {
+                DataLocation linkedTo = dl.getLinkedToLocation();
+                String dssPath = linkedTo.getDssPath();
+                if (validLinkedToDssPath(dl)) {
+                    setModified(true);
+                    setDssParts(dl);
+                    retval = true;
+                }
+            }
+        }
+        if (retval) {saveData();}
+        return retval;
+    }
+
+
 }
