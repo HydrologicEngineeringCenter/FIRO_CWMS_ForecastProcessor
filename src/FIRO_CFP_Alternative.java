@@ -1,7 +1,9 @@
+import com.rma.io.RmaFile;
 import hec2.model.DataLocation;
 import hec2.plugin.selfcontained.SelfContainedPluginAlt;
 import hec2.plugin.model.ComputeOptions;
 import org.jdom.Document;
+import org.jdom.Element;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,33 @@ public class FIRO_CFP_Alternative extends SelfContainedPluginAlt {
 
     @Override
     protected boolean loadDocument(Document document) {
-        return false;
+        if (document != null) {
+            org.jdom.Element ele = document.getRootElement();
+            if (ele == null){
+                System.out.println("No root element on the provided XML Document");
+                return false;
+            }
+            if (ele.getName().equals(DocumentRoot)){
+                setName(ele.getAttributeValue(AlternativeNameAttribute));
+                setDescription(ele.getAttributeValue(AlternativeDescriptionAttribute));
+            }
+            else {
+                System.out.println("XML document root was inproperly named.");
+                return false;
+            }
+
+            if (_dataLocations == null) {
+                _dataLocations = new ArrayList<>();
+            }
+            _dataLocations.clear();
+            loadDataLocations(ele, _dataLocations);
+            setModified(false);
+            return true;
+        }
+        else {
+            System.out.println("XML document was null.");
+            return false;
+        }
     }
 
     @Override
@@ -55,5 +83,20 @@ public class FIRO_CFP_Alternative extends SelfContainedPluginAlt {
 
     public void setComputeOptions(ComputeOptions opts){
         _computeOptions = opts;
+    }
+
+    @Override
+    public boolean saveData(RmaFile file){
+        if (file != null) {
+            Element root = new Element(DocumentRoot);
+            root.setAttribute(AlternativeNameAttribute, getName());
+            root.setAttribute(AlternativeDescriptionAttribute, getDescription());
+            if (_dataLocations != null) {
+                saveDataLocations(root, _dataLocations);
+            }
+            Document doc = new Document(root);
+            return writeXMLFile(doc, file);
+        }
+        return false;
     }
 }
