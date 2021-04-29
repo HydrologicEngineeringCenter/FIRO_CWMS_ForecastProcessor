@@ -8,16 +8,14 @@ import hec2.plugin.action.OutputElement;
 import hec2.plugin.lang.ModelLinkingException;
 import hec2.plugin.lang.OutputException;
 import hec2.plugin.model.ModelAlternative;
-import hec2.plugin.model.ComputeOptions;
 import hec2.plugin.selfcontained.AbstractSelfContainedPlugin;
 import hec2.rts.plugin.RtsPlugin;
 import hec2.rts.plugin.RtsPluginManager;
 import hec2.rts.ui.RtsTabType;
-import sun.plugin2.main.server.Plugin;
 
 import java.util.List;
 
-public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Alternative> implements RtsPlugin, CreatablePlugin {
+public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> implements RtsPlugin, CreatablePlugin {
     public static final String PluginName = "FIRO_CFP";
     private static final String _pluginVersion = "1.0.0";
     private static final String _pluginSubDirectory = "cfp";
@@ -27,7 +25,7 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
     }
 
-    public FIRO_CFP_Plugin() {
+    public CfpPlugin() {
         super();
         setName(PluginName);
         setProgramOrderItem(new ProgramOrderItem(PluginName,
@@ -41,12 +39,12 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
 
     @Override
-    public void editAlternative(FIRO_CFP_Alternative firo_cfp_alternative) {
+    public void editAlternative(CfpAlternative cfp_alternative) {
 
     }
 
     @Override
-    protected FIRO_CFP_Alternative newAlternative(String s) {
+    protected CfpAlternative newAlternative(String s) {
         return null;
     }
 
@@ -82,7 +80,7 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
     @Override
     public boolean compute(ModelAlternative modelAlternative) {
-        FIRO_CFP_Alternative alt = getSimulationAlt(modelAlternative);
+        CfpAlternative alt = getSimulationAlt(modelAlternative);
         if (alt != null) {
             alt.setComputeOptions(modelAlternative.getComputeOptions());
             return alt.compute();

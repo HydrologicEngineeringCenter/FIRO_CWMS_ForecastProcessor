@@ -8,19 +8,19 @@ import org.jdom.Element;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FIRO_CFP_Alternative extends SelfContainedPluginAlt {
+public class CfpAlternative extends SelfContainedPluginAlt {
     private ComputeOptions _computeOptions;
     private List<DataLocation> _dataLocations;
-    private static final String DocumentRoot = "FIRO_CFP_Alternative";
+    private static final String DocumentRoot = "CfpAlternative";
     private static final String AlternativeNameAttribute = "Name";
     private static final String AlternativeDescriptionAttribute = "Desc";
 
-    public FIRO_CFP_Alternative() {
+    public CfpAlternative() {
         super();
         _dataLocations = new ArrayList<>();
     }
 
-    public FIRO_CFP_Alternative(String name){
+    public CfpAlternative(String name){
         this();
         setName(name);
     }
