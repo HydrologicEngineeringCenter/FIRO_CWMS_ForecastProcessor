@@ -1,22 +1,44 @@
 import com.rma.factories.NewObjectFactory;
 import hec2.map.GraphicElement;
 import hec2.model.DataLocation;
+import hec2.model.ProgramOrderItem;
 import hec2.plugin.CreatablePlugin;
 import hec2.plugin.action.EditAction;
 import hec2.plugin.action.OutputElement;
 import hec2.plugin.lang.ModelLinkingException;
 import hec2.plugin.lang.OutputException;
 import hec2.plugin.model.ModelAlternative;
+import hec2.plugin.model.ComputeOptions;
 import hec2.plugin.selfcontained.AbstractSelfContainedPlugin;
 import hec2.rts.plugin.RtsPlugin;
+import hec2.rts.plugin.RtsPluginManager;
 import hec2.rts.ui.RtsTabType;
+import sun.plugin2.main.server.Plugin;
 
 import java.util.List;
 
 public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Alternative> implements RtsPlugin, CreatablePlugin {
+    public static final String PluginName = "FIRO_CFP";
+    private static final String _pluginVersion = "1.0.0";
+    private static final String _pluginSubDirectory = "cfp";
+    private static final String _pluginExtension = ".cfp";
+
     public static void main(String[] args) {
 
     }
+
+    public FIRO_CFP_Plugin() {
+        super();
+        setName(PluginName);
+        setProgramOrderItem(new ProgramOrderItem(PluginName,
+                "Blank Description.",
+                false,
+                1,
+                "CFP",
+                "blank/path"));
+        RtsPluginManager.register(this);
+    }
+
 
     @Override
     public void editAlternative(FIRO_CFP_Alternative firo_cfp_alternative) {
@@ -30,12 +52,12 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
     @Override
     protected String getAltFileExtension() {
-        return null;
+        return _pluginExtension;
     }
 
     @Override
     public String getPluginDirectory() {
-        return null;
+        return _pluginSubDirectory;
     }
 
     @Override
@@ -60,7 +82,14 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
     @Override
     public boolean compute(ModelAlternative modelAlternative) {
-        return false;
+        FIRO_CFP_Alternative alt = getSimulationAlt(modelAlternative);
+        if (alt != null) {
+            alt.setComputeOptions(modelAlternative.getComputeOptions());
+            return alt.compute();
+        } else {
+            addComputeErrorMessage("Failed to find Alternative for " + modelAlternative);
+            return false;
+        }
     }
 
     @Override
@@ -115,6 +144,6 @@ public class FIRO_CFP_Plugin extends AbstractSelfContainedPlugin<FIRO_CFP_Altern
 
     @Override
     public String getVersion() {
-        return null;
+        return _pluginVersion;
     }
 }
