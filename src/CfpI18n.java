@@ -1,4 +1,4 @@
-import hec.util.I18n;
+import com.rma.util.I18n;
 import java.util.ResourceBundle;
 
 public class CfpI18n extends I18n {

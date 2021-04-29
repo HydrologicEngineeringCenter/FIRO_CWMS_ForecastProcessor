@@ -1,14 +1,14 @@
 import com.rma.factories.AbstractNewObjectFactory;
 import com.rma.factories.NewObjectFactory;
-import com.rma.util.I18n;
 
 import javax.swing.*;
 
 public class CfpAlternativeFactory extends AbstractNewObjectFactory implements NewObjectFactory {
+    private CfpPlugin _plugin;
 
-
-    public CfpAlternativeFactory(I18n info) {
-        super(info);
+    public CfpAlternativeFactory(CfpPlugin plugin) {
+        super(CfpI18n.getI18n(CfpMessages.Plugin_Name));
+        _plugin = plugin;
     }
 
     @Override
