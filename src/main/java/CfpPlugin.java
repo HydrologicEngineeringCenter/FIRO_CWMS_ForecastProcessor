@@ -14,8 +14,10 @@ import hec2.plugin.model.ModelAlternative;
 import hec2.plugin.selfcontained.AbstractSelfContainedPlugin;
 import hec2.rts.plugin.RtsPlugin;
 import hec2.rts.plugin.RtsPluginManager;
+import hec2.rts.plugin.action.ComputeModelAction;
 import hec2.rts.ui.RtsTabType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> implements RtsPlugin, CreatablePlugin {
@@ -25,7 +27,7 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
     private static final String _pluginExtension = ".cfp";
 
     public static void main(String[] args) {
-
+        CfpPlugin plugin = new CfpPlugin();
     }
 
     public CfpPlugin() {
@@ -141,7 +143,10 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     public List<EditAction> getEditActions(ModelAlternative modelAlternative) {
-        return null;
+        List<EditAction> actions = new ArrayList<EditAction>();
+        ComputeModelAction cation = new ComputeModelAction("Compute", PluginName, "computeModel");
+        actions.add(cation);
+        return actions;
     }
 
     @Override
