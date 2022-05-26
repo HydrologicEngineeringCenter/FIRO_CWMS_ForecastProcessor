@@ -1,14 +1,11 @@
+import javax.swing.JComponent;
+
 import com.rma.factories.AbstractNewObjectFactory;
 import com.rma.factories.NewObjectFactory;
-import com.rma.io.FileManager;
 import com.rma.io.FileManagerImpl;
 import com.rma.io.RmaFile;
 import com.rma.model.Project;
 import com.rma.ui.GenericNewObjectPanel;
-import com.rma.ui.ProjectDialog;
-import sun.net.www.content.text.Generic;
-
-import javax.swing.*;
 
 public class CfpAlternativeFactory extends AbstractNewObjectFactory implements NewObjectFactory {
     private CfpPlugin _plugin;
