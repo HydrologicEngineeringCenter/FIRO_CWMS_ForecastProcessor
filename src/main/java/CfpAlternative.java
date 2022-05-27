@@ -1,25 +1,33 @@
-import com.rma.io.RmaFile;
-import hec.heclib.dss.DSSPathname;
-import hec2.model.DataLocation;
-import hec2.plugin.model.ModelAlternative;
-import hec2.plugin.selfcontained.SelfContainedPluginAlt;
-import hec2.plugin.model.ComputeOptions;
-import org.jdom.Document;
-import org.jdom.Element;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jdom.Document;
+import org.jdom.Element;
+
+import com.rma.io.RmaFile;
+import com.rma.util.XMLUtilities;
+
+import hec.heclib.dss.DSSPathname;
+import hec.lang.annotation.Scriptable;
+
+import hec2.model.DataLocation;
+import hec2.plugin.model.ComputeOptions;
+import hec2.plugin.model.ModelAlternative;
+import hec2.plugin.selfcontained.SelfContainedPluginAlt;
+
 public class CfpAlternative extends SelfContainedPluginAlt {
     private ComputeOptions _computeOptions;
-    private List<DataLocation> _dataLocations;
     private static final String DocumentRoot = "CfpAlternative";
     private static final String AlternativeNameAttribute = "Name";
     private static final String AlternativeDescriptionAttribute = "Desc";
+    private static final String AlternativeTimeStepAttribute = "TimeStep";
+    
+    private List<DataLocation> _inputDataLocs = new ArrayList<>();
+	private List<DataLocation> _outputDataLocs = new ArrayList<>();
+	private String _timeStep;
 
     public CfpAlternative() {
         super();
-        _dataLocations = new ArrayList<>();
     }
 
     public CfpAlternative(String name){
@@ -43,12 +51,12 @@ public class CfpAlternative extends SelfContainedPluginAlt {
                 System.out.println("XML document root was inproperly named.");
                 return false;
             }
-
-            if (_dataLocations == null) {
-                _dataLocations = new ArrayList<>();
-            }
-            _dataLocations.clear();
-            loadDataLocations(ele, _dataLocations);
+            _timeStep = XMLUtilities.getChildElementAsString(ele, AlternativeTimeStepAttribute, "1HOUR");
+    		_inputDataLocs.clear();
+    		loadDataLocations(ele, _inputDataLocs);
+    		_outputDataLocs.clear();
+    		loadOutputDataLocations(ele, _outputDataLocs);
+            
             setModified(false);
             return true;
         }
@@ -93,9 +101,19 @@ public class CfpAlternative extends SelfContainedPluginAlt {
             Element root = new Element(DocumentRoot);
             root.setAttribute(AlternativeNameAttribute, getName());
             root.setAttribute(AlternativeDescriptionAttribute, getDescription());
-            if (_dataLocations != null) {
-                saveDataLocations(root, _dataLocations);
-            }
+           
+            if ( _timeStep != null )
+    		{
+    			XMLUtilities.saveChildElement(root, AlternativeTimeStepAttribute, _timeStep);
+    		}
+    		if (!_inputDataLocs.isEmpty())
+    		{
+    			saveDataLocations(root, _inputDataLocs);
+    		}
+    		if (!_outputDataLocs.isEmpty())
+    		{
+    			saveOutputDataLocations(root, _outputDataLocs);
+    		}
             Document doc = new Document(root);
             return writeXMLFile(doc, file);
         }
@@ -103,8 +121,8 @@ public class CfpAlternative extends SelfContainedPluginAlt {
     }
 
     private List<DataLocation> defaultDataLocations() {
-        if (!_dataLocations.isEmpty()) {
-            for (DataLocation dl: _dataLocations) {
+        if (!_inputDataLocs.isEmpty()) {
+            for (DataLocation dl: _inputDataLocs) {
                 String dlparts = dl.getDssPath();
                 DSSPathname p = new DSSPathname(dlparts);
                 if (p.aPart().equals("") && p.bPart().equals("") && p.cPart().equals("") &&
@@ -114,7 +132,7 @@ public class CfpAlternative extends SelfContainedPluginAlt {
                     }
                 }
             }
-            return _dataLocations;
+            return _inputDataLocs;
         }
         List<DataLocation> dlList = new ArrayList<>();
         DataLocation dloc = new DataLocation(this.getModelAlt(), _name, "Any");
@@ -153,13 +171,13 @@ public class CfpAlternative extends SelfContainedPluginAlt {
         boolean retval = false;
         for (DataLocation dl: dataLocations) {
             int i = dataLocations.indexOf(dl);
-            if (!_dataLocations.contains(dl)) {
+            if (!_inputDataLocs.contains(dl)) {
                 DataLocation linkedTo = dl.getLinkedToLocation();
                 String dssPath = linkedTo.getDssPath();
                 if (validLinkedToDssPath(dl)) {
                     setModified(true);
                     setDssParts(dl);
-                    _dataLocations.set(i, dl);
+                    _inputDataLocs.set(i, dl);
                     retval = true;
                 }
             } else {
@@ -175,6 +193,41 @@ public class CfpAlternative extends SelfContainedPluginAlt {
         if (retval) {saveData();}
         return retval;
     }
+
+	
+
+	/**
+	 * @param locs
+	 */
+	public void setInputDataLocations(List<DataLocation> locs)
+	{
+		_inputDataLocs.clear();
+		_inputDataLocs.addAll(locs);
+	}
+
+	/**
+	 * @param locs
+	 */
+	public void setOutputDataLocations(List<DataLocation> locs)
+	{
+		_outputDataLocs.clear();
+		_outputDataLocs.addAll(locs);
+	}
+
+	/**
+	 * get the TimeStep the Alternative's TimeSeries will use
+	 * @return the DSS TimeStep
+	 * @see HecTimeSeries.getListOfEParts();
+	 */
+	@Scriptable
+	public String getTimeStep()
+	{
+		return _timeStep;
+	}
+	public void setTimeStep(String timeStep)
+	{
+		_timeStep = timeStep;
+	}
 
 
 }

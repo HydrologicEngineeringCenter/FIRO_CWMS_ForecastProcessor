@@ -1,6 +1,11 @@
+import java.util.ArrayList;
+import java.util.List;
+
+import com.rma.client.Browser;
 import com.rma.factories.NewObjectFactory;
 import com.rma.io.FileManagerImpl;
 import com.rma.io.RmaFile;
+
 import hec2.map.GraphicElement;
 import hec2.model.DataLocation;
 import hec2.model.ProgramOrderItem;
@@ -16,9 +21,6 @@ import hec2.rts.plugin.RtsPlugin;
 import hec2.rts.plugin.RtsPluginManager;
 import hec2.rts.plugin.action.ComputeModelAction;
 import hec2.rts.ui.RtsTabType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> implements RtsPlugin, CreatablePlugin {
     public static final String PluginName = "FIRO_CFP";
@@ -45,7 +47,16 @@ public class CfpPlugin extends AbstractSelfContainedPlugin<CfpAlternative> imple
 
     @Override
     public void editAlternative(CfpAlternative cfp_alternative) {
-
+    	if (cfp_alternative == null )
+		{
+			displayApplication();
+			return;
+		}
+		CfpAltEditor editor = new CfpAltEditor(
+				Browser.getBrowserFrame(), true);
+		editor.setSelectionList(_altList);
+		editor.fillForm(cfp_alternative);
+		editor.setVisible(true);
     }
 
     @Override
